@@ -2,6 +2,8 @@ const audioInput=document.getElementById('audioFile');
 const textInput=document.getElementById('textFile');
 const textArea=document.getElementById('referenceText');
 const scenarioInput=document.getElementById('scenario');
+const voiceOverSubdomainField=document.getElementById('voiceOverSubdomainField');
+const voiceOverSubdomainInput=document.getElementById('voiceOverSubdomain');
 const preview=document.getElementById('audioPreview');
 const button=document.getElementById('evaluateBtn');
 const statusEl=document.getElementById('status');
@@ -27,11 +29,25 @@ textInput.addEventListener('change',async()=>{
   }
 });
 
+scenarioInput.addEventListener('change',()=>{
+  const isVideoVoiceOver=scenarioInput.value==='Video Voice-Over';
+  voiceOverSubdomainField.hidden=!isVideoVoiceOver;
+  voiceOverSubdomainInput.required=isVideoVoiceOver;
+  if(!isVideoVoiceOver)voiceOverSubdomainInput.value='';
+});
+
 button.addEventListener('click',async()=>{
   const audio=audioInput.files?.[0];
   const reference=textArea.value.trim();
+  const scenario=scenarioInput.value;
+  const scenarioSubdomain=voiceOverSubdomainInput.value;
+
   if(!audio){statusEl.textContent='Please upload an audio file.';return;}
-  if(!reference){statusEl.textContent='Please paste the reference text. TXT upload is also supported.';return;}
+  if(!reference){statusEl.textContent='Please provide the exact reference text.';return;}
+  if(!scenario){statusEl.textContent='Please select a Scenario / Domain.';return;}
+  if(scenario==='Video Voice-Over'&&!scenarioSubdomain){
+    statusEl.textContent='Please select the Video Voice-Over content type.';return;
+  }
   if(!API_BASE){
     statusEl.textContent='The evaluation backend is not connected yet. No score has been generated.';
     resultBody.textContent='Evaluation engine not configured. This app will not invent findings or MOS scores.';
@@ -40,7 +56,8 @@ button.addEventListener('click',async()=>{
   const form=new FormData();
   form.append('audio',audio);
   form.append('reference_text',reference);
-  form.append('scenario',scenarioInput.value.trim());
+  form.append('scenario',scenario);
+  if(scenarioSubdomain)form.append('scenario_subdomain',scenarioSubdomain);
   button.disabled=true;statusEl.textContent='Processing audio...';
   try{
     const response=await fetch(API_BASE+'/evaluate',{method:'POST',body:form});
