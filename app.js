@@ -11,7 +11,6 @@ const button=document.getElementById('evaluateBtn');
 const statusEl=document.getElementById('status');
 const resultBody=document.getElementById('resultBody');
 
-// Set this to the deployed HTTPS backend URL after deployment.
 const API_BASE='';
 
 audioInput.addEventListener('change',()=>{
@@ -42,7 +41,6 @@ function updateScenarioFields(){
   if(!isOther)additionalNotesInput.value='';
 }
 scenarioInput.addEventListener('change',updateScenarioFields);
-// Apply conditional fields on first load too, including browser-restored select values.
 updateScenarioFields();
 
 button.addEventListener('click',async()=>{
@@ -66,37 +64,69 @@ button.addEventListener('click',async()=>{
     resultBody.textContent='Evaluation engine not configured. This app will not invent findings or MOS scores.';
     return;
   }
+
   const form=new FormData();
   form.append('audio',audio);
   form.append('reference_text',reference);
   form.append('scenario',scenario);
   if(scenarioSubdomain)form.append('scenario_subdomain',scenarioSubdomain);
   if(additionalNotes)form.append('additional_notes',additionalNotes);
-  button.disabled=true;statusEl.textContent='Processing audio...';
+
+  button.disabled=true;
+  statusEl.textContent='Processing audio...';
   try{
     const response=await fetch(API_BASE+'/evaluate',{method:'POST',body:form});
     const data=await response.json();
     if(!response.ok)throw new Error(data.detail||'Evaluation failed.');
-    renderResult(data);statusEl.textContent='Evaluation complete.';
-  }catch(error){statusEl.textContent=error.message;}
-  finally{button.disabled=false;}
+    renderResult(data);
+    statusEl.textContent='Evaluation complete.';
+  }catch(error){
+    statusEl.textContent=error.message;
+  }finally{
+    button.disabled=false;
+  }
 });
+
+function addResultLine(label,value){
+  if(value===undefined||value===null||value==='')return;
+  const row=document.createElement('p');
+  row.className='finding';
+  const strong=document.createElement('strong');
+  strong.textContent=label+': ';
+  row.append(strong,document.createTextNode(String(value)));
+  resultBody.append(row);
+}
 
 function renderResult(data){
   resultBody.replaceChildren();
-  (data.findings||[]).forEach(item=>{
-    const row=document.createElement('div');row.className='finding';
-    const title=document.createElement('strong');title.textContent=item.category+': ';
-    row.append(title,document.createTextNode(item.explanation));resultBody.append(row);
-  });
-  const scores=document.createElement('div');scores.className='scores';
-  scores.innerHTML='<div class="score">TTS Basic Overall MOS<b>'+escapeHtml(data.basic_mos??'Not scorable')+'</b></div><div class="score">Scene Style Fit MOS<b>'+escapeHtml(data.scene_fit_mos??'Not scorable')+'</b></div>';
+  addResultLine('Classification',data.classification??(Array.isArray(data.findings)?data.findings.map(x=>x.category).join('; ')||'NONE':undefined));
+  addResultLine('Explanation',data.explanation);
+  if(Array.isArray(data.findings)){
+    data.findings.forEach(item=>{
+      const row=document.createElement('div');
+      row.className='finding';
+      const title=document.createElement('strong');
+      title.textContent=(item.category||'Finding')+': ';
+      row.append(title,document.createTextNode(item.explanation||''));
+      resultBody.append(row);
+    });
+  }
+  const scores=document.createElement('div');
+  scores.className='scores';
+  const basic=document.createElement('div');
+  basic.className='score';
+  basic.append(document.createTextNode('TTS Basic Overall MOS'));
+  const basicValue=document.createElement('b');
+  basicValue.textContent=data.basic_mos??'Not scorable';
+  basic.append(basicValue);
+  const scene=document.createElement('div');
+  scene.className='score';
+  scene.append(document.createTextNode('Scene Style Fit MOS'));
+  const sceneValue=document.createElement('b');
+  sceneValue.textContent=data.scene_fit_mos??'Not scorable';
+  scene.append(sceneValue);
+  scores.append(basic,scene);
   resultBody.append(scores);
-  if(data.recommended_domain){
-    const rec=document.createElement('p');rec.className='finding';rec.textContent='Recommended Domain: '+data.recommended_domain;resultBody.append(rec);
-  }
-  if(data.additional_notes){
-    const notes=document.createElement('p');notes.className='finding';notes.textContent='Additional Notes: '+data.additional_notes;resultBody.append(notes);
-  }
+  addResultLine('Recommended Domain',data.recommended_domain);
+  addResultLine('Additional Notes',data.additional_notes);
 }
-function escapeHtml(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
