@@ -55,6 +55,11 @@
         </select>
         <small>These types follow the Video Voice-Over expectations in the evaluation guideline.</small>
       </div>
+      <div class="field" id="otherNotesField" hidden>
+        <label for="additionalNotes">Additional Notes for Other <span aria-hidden="true">*</span></label>
+        <textarea id="additionalNotes" rows="4" placeholder="Describe the intended scenario/domain and the specific voice style expected..."></textarea>
+        <small>Use this when none of the listed domains matches the intended scenario, as required by the evaluation guideline.</small>
+      </div>
       <button id="evaluateBtn" type="button">Evaluate audio</button>
       <p id="status" class="status" role="status">Ready when your audio, reference text, and scenario/domain are provided.</p>
     </section>
