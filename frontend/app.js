@@ -42,6 +42,8 @@ function updateScenarioFields(){
   if(!isOther)additionalNotesInput.value='';
 }
 scenarioInput.addEventListener('change',updateScenarioFields);
+// Apply conditional fields on first load too, including browser-restored select values.
+updateScenarioFields();
 
 button.addEventListener('click',async()=>{
   const audio=audioInput.files?.[0];
