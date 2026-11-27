@@ -17,24 +17,46 @@
     </header>
     <section class="panel">
       <div class="field">
-        <label for="audioFile">1. Upload audio</label>
-        <input id="audioFile" type="file" accept=".wav,.mp3,.m4a,.flac,audio/*">
+        <label for="audioFile">1. Upload audio <span aria-hidden="true">*</span></label>
+        <input id="audioFile" type="file" accept=".wav,.mp3,.m4a,.flac,audio/*" required>
         <small>Choose an audio recording.</small>
         <audio id="audioPreview" controls hidden></audio>
       </div>
       <div class="field">
         <label for="textFile">2. Upload reference text</label>
         <input id="textFile" type="file" accept=".txt,.pdf,.doc,.docx,.png,.jpg,.jpeg">
-        <small>Or paste the exact reference text below. In this initial build, uploaded TXT files are read in the browser.</small>
-        <textarea id="referenceText" rows="7" placeholder="Paste the exact reference text here..."></textarea>
+        <small>Or paste the exact reference text below. TXT files can be read in the browser; other formats currently need text extraction.</small>
+        <textarea id="referenceText" rows="7" placeholder="Paste the exact reference text here..." required></textarea>
       </div>
       <div class="field">
-        <label for="scenario">3. Scene / scenario (optional)</label>
-        <input id="scenario" type="text" placeholder="e.g. customer service, audiobook, podcast">
-        <small>If no scenario is supplied, Scene Style Fit MOS may be not scorable.</small>
+        <label for="scenario">3. Scenario / Domain <span aria-hidden="true">*</span></label>
+        <select id="scenario" required>
+          <option value="">Select the audio's intended domain...</option>
+          <option value="AI Assistant">AI Assistant</option>
+          <option value="Spoken-Language Teaching">Spoken-Language Teaching</option>
+          <option value="Navigation Prompt">Navigation Prompt</option>
+          <option value="Podcast / Vlog">Podcast / Vlog</option>
+          <option value="Digital-Human Live Commerce">Digital-Human Live Commerce</option>
+          <option value="Customer Service">Customer Service</option>
+          <option value="Audiobook">Audiobook</option>
+          <option value="Video Voice-Over">Video Voice-Over</option>
+          <option value="Other">Other</option>
+        </select>
+        <small>Choose the intended scenario so Scene Style Fit MOS can be evaluated against the correct expectation.</small>
+      </div>
+      <div class="field" id="voiceOverSubdomainField" hidden>
+        <label for="voiceOverSubdomain">Video Voice-Over type <span aria-hidden="true">*</span></label>
+        <select id="voiceOverSubdomain">
+          <option value="">Select the content type...</option>
+          <option value="News">News</option>
+          <option value="Entertainment / Social Media">Entertainment / Social Media</option>
+          <option value="Character Animation">Character Animation</option>
+          <option value="Religious / Formal Content">Religious / Formal Content</option>
+        </select>
+        <small>These types follow the Video Voice-Over expectations in the evaluation guideline.</small>
       </div>
       <button id="evaluateBtn" type="button">Evaluate audio</button>
-      <p id="status" class="status" role="status">Ready when your files and reference text are provided.</p>
+      <p id="status" class="status" role="status">Ready when your audio, reference text, and scenario/domain are provided.</p>
     </section>
     <section class="panel results" aria-live="polite">
       <div class="result-head"><h2>Evaluation result</h2><span class="pill">BBQ rubric</span></div>
