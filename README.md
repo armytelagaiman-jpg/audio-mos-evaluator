@@ -1,15 +1,24 @@
 # Audio MOS Evaluator
 
-Public-facing interface scaffold for BBQ T2A Voice Quality MOS evaluation.
+BBQ T2A Voice Quality MOS evaluation interface and API scaffold.
 
 ## Current status
-This repository currently contains the user interface and a backend API scaffold. **The evaluation engine is not connected yet**, so the app must not invent findings or MOS scores.
+The frontend collects the required inputs and the API validates them. **The actual audio evaluation engine is not connected yet.** The API intentionally returns HTTP 501 after successful input validation and never fabricates scores.
 
-## Interface
-- Upload an audio recording.
-- Upload or paste reference text.
-- Optionally provide the target scene/scenario.
-- View detected issue categories and the two independent MOS scores.
+## Required inputs
+- Audio recording.
+- Exact reference text.
+- Scenario / Domain selected from the guideline categories.
+- For Video Voice-Over: select the applicable content type (News, Entertainment / Social Media, Character Animation, or Religious / Formal Content).
+- For Other: Additional Notes describing the intended scenario when none of the listed domains fits.
+
+## Evaluation requirements
+The eventual engine must follow the supplied BBQ T2A Voice Quality MOS Evaluation Guidelines:
+- Score TTS Basic Overall MOS and Scene Style Fit MOS independently.
+- Use only evidence from the full audio, reference text, and selected scenario/domain.
+- Apply the issue tags defined by the guideline.
+- If the scenario does not fit, recommend a more suitable domain and explain the mismatch.
+- Never fabricate words, timestamps, findings, or MOS scores.
 
 ## Local development
 Backend:
@@ -21,7 +30,4 @@ pip install -r requirements.txt
 uvicorn app:app --reload
 ```
 
-Open `frontend/index.html` in a browser for the static interface. Set `API_BASE` in `frontend/app.js` to the deployed backend URL when ready.
-
-## Required next milestone
-Connect and validate a real audio evaluation engine: transcription/alignment, evidence-based detection of BBQ issue categories, and separately calibrated Basic MOS and Scene Style Fit MOS. Do not enable scoring until this has been implemented and tested against the supplied BBQ rubric.
+Open `frontend/index.html` in a browser for the static interface. Set `API_BASE` in `frontend/app.js` to the deployed backend URL when the evaluation engine is implemented and deployed.
